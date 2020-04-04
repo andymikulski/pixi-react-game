@@ -10,10 +10,11 @@ module.exports = {
     entry: {
         'main': './main.ts'
     },
-    
+
     output: {
         filename: '[name].bundle.js',
-        path: DESTINATION
+        path: DESTINATION,
+        publicPath: '/',
     },
 
     resolve: {
@@ -48,6 +49,11 @@ module.exports = {
                 test: /\.ts$/,
                 exclude: [ /node_modules/ ],
                 use: 'awesome-typescript-loader'
+            },
+            {
+                test: /\.(png|jpg|gif)$/,
+                exclude: [ /node_modules/ ],
+                use: 'url-loader'
             }
         ]
     },
