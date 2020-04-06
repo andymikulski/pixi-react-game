@@ -8,7 +8,7 @@ module.exports = {
     context: ROOT,
 
     entry: {
-        'main': './main.ts'
+        'main': './main.tsx'
     },
 
     output: {
@@ -18,7 +18,12 @@ module.exports = {
     },
 
     resolve: {
-        extensions: ['.ts', '.js'],
+        alias: {
+            "react": "preact/compat",
+            "react-dom/test-utils": "preact/test-utils",
+            "react-dom": "preact/compat",
+        },
+        extensions: ['.ts', '.tsx', '.js'],
         modules: [
             ROOT,
             'node_modules'
@@ -37,7 +42,7 @@ module.exports = {
             },
             {
                 enforce: 'pre',
-                test: /\.ts$/,
+                test: /\.(ts|tsx)$/,
                 exclude: /node_modules/,
                 use: 'tslint-loader'
             },
@@ -46,12 +51,12 @@ module.exports = {
             * LOADERS
             *****************/
             {
-                test: /\.ts$/,
+                test: /\.(ts|tsx)$/,
                 exclude: [ /node_modules/ ],
                 use: 'awesome-typescript-loader'
             },
             {
-                test: /\.(png|jpg|gif)$/,
+                test: /\.(png|jpg|gif|mp3|jpeg|wav)$/,
                 exclude: [ /node_modules/ ],
                 use: 'url-loader'
             }

@@ -13,11 +13,7 @@
     "build.all": "npm run build.prod && npm run build.esnext",
     "test": "karma start karma.config.js"
   },
-  "keywords": [
-    "webpack",
-    "webpack4",
-    "typescript"
-  ],
+  "keywords": [],
   "author": "Juri Strumpflohner",
   "license": "ISC",
   "devDependencies": {
@@ -45,8 +41,18 @@
   },
   "dependencies": {
     "@types/pixi.js": "^5.0.0",
+    "@types/react": "^16.9.32",
+    "@types/react-dom": "^16.9.6",
+    "@types/react-native": "^0.62.1",
+    "@types/styled-components": "^5.0.1",
     "file-loader": "^6.0.0",
+    "pixi-filters": "^3.1.1",
+    "pixi-sound": "^3.0.4",
     "pixi.js": "^5.2.1",
+    "preact": "^10.3.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "styled-components": "^5.0.1",
     "url-loader": "^4.0.0"
   }
 }
