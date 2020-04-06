@@ -6,6 +6,7 @@ import { ICollidable } from './ICollidable';
 import PubSubSystem from '../PubSub';
 
 export default class GamePlayer extends PIXI.Sprite implements IFrameHandler, ICollidable {
+
   public name:string = 'player:ship';
   public score:number = 0;
 

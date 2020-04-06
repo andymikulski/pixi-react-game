@@ -31,6 +31,7 @@ export type GameProps = {
 
 export default class Game extends React.PureComponent<GameProps, {}> {
 
+
   private assetManager: AssetManager;
 
   static SCREEN_WIDTH = window.innerWidth;
@@ -76,7 +77,7 @@ export default class Game extends React.PureComponent<GameProps, {}> {
     this.player = GamePlayer.Create(this.props.eventSystem);
 
     this.props.eventSystem.on('game:start', async () => {
-      await this.assetManager.startLoading();
+      await this.assetManager.preloadAssets();
       this.start();
     });
 
@@ -162,24 +163,31 @@ export default class Game extends React.PureComponent<GameProps, {}> {
     this.entities.push(this.player);
 
 
+    for (let i = 0; i < 5; i++) {
+      setTimeout(() => {
+        const enemy = GameEnemy.Create(this.props.eventSystem, this.player);
+        enemy.position.set(Math.random() * Game.SCREEN_WIDTH, -50);
+        enemy.rotation = Math.PI / 2;
+        enemy.setPosition(enemy.position.x, Game.SCREEN_HEIGHT * 0.1);
 
-    const enemy = GameEnemy.Create(this.props.eventSystem);
-    enemy.position.x = Game.SCREEN_WIDTH / 2;
-    enemy.position.y = -50;
-    enemy.rotation = Math.PI / 2;
-    enemy.setPosition(Game.SCREEN_WIDTH / 2, Game.SCREEN_HEIGHT * 0.1);
-
-    this.stage.addChild(enemy);
-    this.entities.push(enemy);
-    this.collidables.push(enemy);
+        this.stage.addChild(enemy);
+        this.entities.push(enemy);
+        this.collidables.push(enemy);
+      }, i * 333);
+    }
 
 
 
     const shootSound = this.assetManager.getSound('player:shoot');
-    const music = this.assetManager.getSound('music');
-    music.filters = [new PIXISound.filters.TelephoneFilter()];
-    music.volume = 0.25;
-    music.play();
+
+    console.log('checking for music..');
+    this.assetManager.waitUntilLoaded('music').then(() => {
+      console.log('we have music..');
+      const music = this.assetManager.getSound('music');
+      music.filters = [new PIXISound.filters.TelephoneFilter()];
+      music.volume = 0.25;
+      music.play();
+    });
 
     const cd = new CollisionSystem(this.props.eventSystem);
     // this.onAfterFrames.push(cd);
@@ -212,7 +220,7 @@ export default class Game extends React.PureComponent<GameProps, {}> {
 
     // stage.interactive = true;
 
-    stage.on("pointermove", (e: PIXI.interaction.InteractionEvent) => {
+    stage.on("pointerdown", (e: PIXI.interaction.InteractionEvent) => {
       shoot(this.player.rotation, {
         x: this.player.position.x + Math.cos(this.player.rotation) * 20,
         y: this.player.position.y + Math.sin(this.player.rotation) * 20

@@ -7,6 +7,19 @@ import GamePlayer from './lib/GamePlayer';
 import GameUI from './GameUI';
 import LevelStartTimer from './LevelStartTimer';
 import LoadingUI from './LoadingUI';
+import style from 'styled-components';
+
+const CenteredContainer = style.div`
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+`;
+const StartButton = style.button`
+  display: block;
+  margin: 0 auto;
+`;
+
 
 class App extends React.PureComponent {
   events = new PubSubSystem();
@@ -59,7 +72,9 @@ class App extends React.PureComponent {
       <div>
         {
           !this.state.showTimer && !this.state.showUI &&
-          <button onClick={this.startGame}>Start Game</button>
+          <CenteredContainer>
+            <StartButton onClick={this.startCountdown}>Start Game</StartButton>
+          </CenteredContainer>
         }
 
         {

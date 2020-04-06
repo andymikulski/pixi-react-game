@@ -21,11 +21,8 @@ export default class CollisionSystem implements IAfterFrameHandler {
     let flagged:{[idx:number]:boolean} = {};
 
     for (let i = 0; i < entities.length; i++) {
-      if(flagged[i]){
+      if(flagged[i] || entities[i].alpha === 0){
         continue;
-      }
-      if(!entities[i].position){
-        console.log('ok', i, entities[i]);
       }
       const neighbors = this.hash.getNeighboringIDsAtPos(entities[i].position, entities[i].width);
       const group = entities[i].name.split(':')[0];

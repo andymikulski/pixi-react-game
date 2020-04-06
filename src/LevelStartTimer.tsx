@@ -1,4 +1,17 @@
 import React from 'react';
+import style from 'styled-components';
+
+
+const CenteredContainer = style.div`
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+`;
+const Countdown = style.text`
+  font-size: 2em;
+  font-family: 'Press Start 2P', monospace;
+`;
 
 export default class LevelStartTimer extends React.PureComponent<any,any> {
 
@@ -26,7 +39,9 @@ export default class LevelStartTimer extends React.PureComponent<any,any> {
   render() {
     return (
       <>
-        <h2>{this.state.startTimer}</h2>
+        <CenteredContainer>
+          <Countdown>{ this.state.startTimer }</Countdown>
+        </CenteredContainer>
       </>
     );
   }

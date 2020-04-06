@@ -25,11 +25,6 @@ const StatsContainer = style.div`
 `
 
 export default class GameUI extends React.PureComponent<any, any> {
-  events = new PubSubSystem();
-
-  player = new GamePlayer();
-
-
   render() {
     return (
       <>
@@ -37,13 +32,18 @@ export default class GameUI extends React.PureComponent<any, any> {
           <button onClick={() => {
             this.props.onTogglePause();
           }}>Pause</button>
+
+          <br />
+          <br />
+          <br />
+            Game speed: {this.props.gameSpeed.toFixed(2)}
+          <br />
           <button onClick={() => {
             this.props.onSpeedChange(-0.1);
           }}>Slower</button>
           <button onClick={() => {
             this.props.onSpeedChange(0.1);
           }}>Faster</button>
-        Game speed: {this.props.gameSpeed.toFixed(2)}
         </UIContainer>
 
         <StatsContainer>

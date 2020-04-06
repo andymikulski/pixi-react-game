@@ -13,7 +13,9 @@ export default class AssetManager {
     AssetManager._ass = this;
   }
 
-  public async startLoading() {
+  private loadedKeys:string[] = [];
+
+  public async preloadAssets() {
     return new Promise((res) => {
       let loaded: { [name: string]: number } = {};
       let totalProgress = 0;
@@ -27,7 +29,6 @@ export default class AssetManager {
         .add('player:shoot', 'player_shoot.wav')
         .add('enemy:ship', 'enemy.png')
         .add('enemy:bullet', 'enemy-bullet.png')
-        .add('music', 'waterflame_daybreaker.mp3')
         .on('progress', (loader, resource) => {
           loaded[resource.name] = loader.progress;
 
@@ -40,11 +41,48 @@ export default class AssetManager {
           this.eventSystem.trigger('assets:load:progress', totalProgress);
         })
         .once('complete', (loader, resources) => {
+          this.loadedKeys = [].concat(Object.keys(resources));
+
           this.eventSystem.trigger('assets:load:progress', 100);
           this.eventSystem.trigger('assets:load:done');
+
+          this.loadLowPriority();
+
           res();
         })
         .load();
+    });
+  }
+
+  public async loadLowPriority(){
+    return new Promise((res)=>{
+      PIXI.Loader.shared
+        .add('music', 'waterflame_daybreaker.mp3')
+        .once('complete', (loader, allResources) => {
+          Object.keys(allResources).forEach((resource:string) => {
+            if(this.loadedKeys.indexOf(resource) === -1){
+            console.log('loaded low-priority item ' + 'assets:load:' + resource);
+            this.loadedKeys.push(resource);
+              this.eventSystem.trigger('assets:load:' + resource);
+            }
+          });
+          res();
+        })
+        .load();
+    });
+  }
+
+  public async waitUntilLoaded(tag:string) {
+    // If already loaded, just return immediately.
+    if(this.loadedKeys.indexOf(tag) !== -1){
+      return Promise.resolve();
+    }
+
+    // Else, return a promise and only kick off once the asset load event has fired.
+    return new Promise((res)=>{
+      this.eventSystem.once('assets:load:' + tag, ()=>{
+        res();
+      });
     });
   }
 
