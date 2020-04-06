@@ -40,7 +40,9 @@ export default class CollisionSystem implements IAfterFrameHandler {
 
           const neighBounds = entities[id].getBounds();
           if(AABB(bounds, neighBounds)){
-            this.eventSystem.trigger('collision', { entity: entities[i], target: entities[id] });
+
+            entities[i].onCollision();
+            // this.eventSystem.trigger('collision', { entity: entities[i], target: entities[id] });
             // this.eventSystem.trigger('collision', { entity: entities[id], target: entities[i] });
 
             flagged[i] = true;
@@ -51,7 +53,7 @@ export default class CollisionSystem implements IAfterFrameHandler {
     }
   }
 
-  onAfterFrame(entities: PIXI.Sprite[]) {
+  onAfterFrame(entities: ICollidable[]) {
     this.detectCollisions(entities);
 
     for (let i = 0; i < entities.length; i++) {

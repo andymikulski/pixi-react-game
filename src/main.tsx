@@ -12,8 +12,6 @@ class App extends React.PureComponent {
   events = new PubSubSystem();
 
 
-  player = new GamePlayer();
-
   state = {
     carrotsFired: 0,
     showTimer: false,

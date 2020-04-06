@@ -3,15 +3,18 @@ import { lerp } from './Utils';
 import { IFrameHandler } from './IFrameHandler';
 import Game from '../game';
 import { ICollidable } from './ICollidable';
+import PubSubSystem from '../PubSub';
 
 export default class GamePlayer extends PIXI.Sprite implements IFrameHandler, ICollidable {
   public name:string = 'player:ship';
   public score:number = 0;
 
+  private eventSystem:PubSubSystem;
+
   public horizontalSpeed:number = 6;
   public verticalSpeed:number = 10;
 
-  public shootPerSec:number = 10;
+  public shootPerSec:number = 2;
 
   private targetPos:PIXI.IPoint = new PIXI.Point(0, 0);
 
@@ -19,9 +22,10 @@ export default class GamePlayer extends PIXI.Sprite implements IFrameHandler, IC
     this.targetPos.set(x, y);
   }
 
-  public static Create():GamePlayer {
+  public static Create(events:PubSubSystem):GamePlayer {
     const tex = PIXI.Texture.from(require('../player.png').default);
     const player = new GamePlayer(tex);
+    player.eventSystem = events;
     player.width = 32;
     player.height = 32;
     player.anchor.x = 0.5;
@@ -70,5 +74,9 @@ export default class GamePlayer extends PIXI.Sprite implements IFrameHandler, IC
     else if (this.position.y > Game.SCREEN_HEIGHT) {
       this.position.y = Game.SCREEN_HEIGHT;
     }
+  }
+
+  public onCollision = () => {
+    this.eventSystem.trigger('player:died');
   }
 }

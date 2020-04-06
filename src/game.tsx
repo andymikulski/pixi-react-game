@@ -6,7 +6,7 @@ import GameLevel from './lib/GameLevel';
 import { StateMachine } from './lib/StateMachine';
 import GamePlayer from './lib/GamePlayer';
 import { IFrameHandler } from './lib/IFrameHandler';
-import GameProjectile from './lib/GameProjectile';
+import GameProjectile, { BasicBullet, HomingBullet } from './lib/GameProjectile';
 import ShockwaveEffect from './lib/ShockwaveEffect';
 import ScrollingSprite from './lib/ScrollingSprite';
 import CRTEffect from './lib/CRTEffect';
@@ -14,6 +14,8 @@ import { IAfterFrameHandler } from './lib/IAfterFrameHandler';
 import CollisionSystem from './lib/CollisionSystem';
 import { ICollidable } from './lib/ICollidable';
 import AssetManager from './lib/AssetManager';
+import GameEnemy from './lib/GameEnemy';
+import ExplosionEffect from './lib/ExplosionEffect';
 
 // const PLAYER_DEATH_ANIM = require('./assets/player-death.anim').default;
 
@@ -71,16 +73,49 @@ export default class Game extends React.PureComponent<GameProps, {}> {
       backgroundColor: 0x123456,
     });
 
+    this.player = GamePlayer.Create(this.props.eventSystem);
+
     this.props.eventSystem.on('game:start', async () => {
       await this.assetManager.startLoading();
       this.start();
     });
 
-    this.props.eventSystem.on('collision', ({ entity, target }: any) => {
-      console.log('collision!', entity.name, target.name);
+    this.props.eventSystem.on('enemy:died', (entity: GameEnemy) => {
+      const exp = ExplosionEffect.Create(entity.position);
       const filter = ShockwaveEffect.Create(entity.position);
+
+      entity.alpha = 0;
+
+      this.stage.addChild(exp);
       this.entities.push(filter);
       this.grid.filters.push(filter);
+    });
+
+
+    const homingBehavior = new HomingBullet(this.player);
+    const makeHomingBullet = (tag: string) => {
+      const proj = GameProjectile.Create(
+        homingBehavior,
+        this.assetManager.getTexture(tag)
+      );
+      proj.name = tag;
+      return proj;
+    }
+
+    this.props.eventSystem.on('enemy:fire', (entity: GameEnemy) => {
+      // const bullet = GameProjectile.Create(this.player, this.assetManager.getTexture('enemy:bullet'));
+      // bullet.name = 'enemy:bullet';
+      const bullet = makeHomingBullet('enemy:bullet');
+      bullet.width = 33;
+      bullet.height = 12;
+      bullet.speed = 2;
+      bullet.position.x = entity.position.x;
+      bullet.position.y = entity.position.y;
+      bullet.rotation = entity.rotation;
+
+      this.stage.addChild(bullet);
+      this.entities.push(bullet);
+      this.collidables.push(bullet);
     });
   }
 
@@ -101,10 +136,6 @@ export default class Game extends React.PureComponent<GameProps, {}> {
   }
 
   start = () => {
-
-
-
-
     var bg = PIXI.Texture.from(require('./background.gif').default);
     var background = new ScrollingSprite(bg, 0.5, 0);// new PIXI.Sprite(bg);
     background.width = Game.SCREEN_WIDTH;
@@ -127,10 +158,20 @@ export default class Game extends React.PureComponent<GameProps, {}> {
     this.grid = grid;
     this.stage.interactive = true;
 
-    this.player = GamePlayer.Create();
     this.stage.addChild(this.player);
-
     this.entities.push(this.player);
+
+
+
+    const enemy = GameEnemy.Create(this.props.eventSystem);
+    enemy.position.x = Game.SCREEN_WIDTH / 2;
+    enemy.position.y = -50;
+    enemy.rotation = Math.PI / 2;
+    enemy.setPosition(Game.SCREEN_WIDTH / 2, Game.SCREEN_HEIGHT * 0.1);
+
+    this.stage.addChild(enemy);
+    this.entities.push(enemy);
+    this.collidables.push(enemy);
 
 
 
@@ -194,14 +235,26 @@ export default class Game extends React.PureComponent<GameProps, {}> {
     let lastShot = -Infinity;
     let now;
 
+
+    const basicBehavior = new BasicBullet();
+    const makeBasicBullet = (tag: string) => {
+      const proj = GameProjectile.Create(
+        basicBehavior,
+        this.assetManager.getTexture(tag)
+      );
+      proj.name = tag;
+
+      return proj;
+    }
+
     const shoot = (rotation: number, startPosition: { x: number; y: number }) => {
       now = Date.now();
       if (now - lastShot < (1000 / this.player.shootPerSec)) {
         return;
       }
       lastShot = now;
-      const bullet = GameProjectile.Create(this.assetManager.getTexture('carrot'));
-      bullet.name = 'player:bullet';
+      // const bullet = GameProjectile.Create(this.player, this.assetManager.getTexture('carrot'));
+      const bullet = makeBasicBullet('player:bullet');
       bullet.width = 33;
       bullet.height = 12;
       bullet.speed = 5;
@@ -231,31 +284,30 @@ export default class Game extends React.PureComponent<GameProps, {}> {
       return angle;
     }
 
-    PIXI.Loader.shared
-      .add('assets/explosion.json') //    "images/spritesheet.json")
-      .load(() => {
-        this.app.start();
+    // PIXI.Loader.shared
+    //   .add('assets/explosion.json') //    "images/spritesheet.json")
+    //   .load(() => {
+    //     this.app.start();
 
-        let sheet = PIXI.Loader.shared.resources['assets/explosion.json'].spritesheet;
+    //     let sheet = PIXI.Loader.shared.resources['assets/explosion.json'].spritesheet;
 
-        // let anim = sheet.animations['assets/explosion.json'];
-        const testExplosion = new PIXI.AnimatedSprite(sheet.animations.frame, true);
-        testExplosion.position.x = Game.SCREEN_WIDTH / 2;
-        testExplosion.position.y = Game.SCREEN_HEIGHT / 2;
-        testExplosion.animationSpeed = 18 / 100;
-        testExplosion.loop = false;
-        testExplosion.play();
-        testExplosion.onComplete = () => {
-          testExplosion.destroy();
-        }
-        this.stage.addChild(testExplosion);
+    // let anim = sheet.animations['assets/explosion.json'];
+    // const testExplosion = new PIXI.AnimatedSprite(sheet.animations.frame, true);
+    // testExplosion.position.x = Game.SCREEN_WIDTH / 2;
+    // testExplosion.position.y = Game.SCREEN_HEIGHT / 2;
+    // testExplosion.animationSpeed = 18 / 100;
+    // testExplosion.loop = false;
+    // testExplosion.play();
+    // testExplosion.onComplete = () => {
+    //   testExplosion.destroy();
+    // }
+    // this.stage.addChild(testExplosion);
 
-        const filter = ShockwaveEffect.Create(testExplosion.position);
-        this.entities.push(filter);
-        this.stage.filters.push(filter);
-      });
-
-    this.app.stop();
+    //     const filter = ShockwaveEffect.Create(testExplosion.position);
+    //     this.entities.push(filter);
+    //     this.stage.filters.push(filter);
+    //   });
+    // this.app.stop();
 
     // animatedCapguy = new PIXI.extras.AnimatedSprite(sheet.animations["capguy"]);
     // // set speed, start playback and add it to the stage
